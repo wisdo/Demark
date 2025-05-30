@@ -36,6 +36,85 @@ func convertHTML() async throws {
 }
 ```
 
+## Conversion Engines
+
+Demark provides two HTML to Markdown conversion engines, each with different trade-offs:
+
+### 1. Turndown.js (Default) - Full-Featured DOM-Based Conversion
+
+**How it works**: Uses WKWebView to load Turndown.js in a real browser environment with full DOM parsing.
+
+**Advantages**:
+- 🎯 **Most accurate conversion**: Real browser DOM parsing handles complex/malformed HTML
+- 🛡️ **Battle-tested**: Turndown.js is the industry standard used by millions
+- ⚙️ **Full configuration options**: Supports all formatting styles (ATX/Setext headings, code block styles)
+- 🌐 **Handles any HTML**: Processes JavaScript-rendered content, inline styles, complex nesting
+
+**Disadvantages**:
+- 🐌 **Slower performance**: ~100ms first conversion (WebView setup), ~10-50ms subsequent
+- 💾 **Higher memory usage**: WKWebView has significant overhead
+- 🧵 **Main thread only**: WebView requires main thread execution
+
+**When to use**:
+- Converting complex HTML from websites or CMSs
+- Need maximum compatibility and accuracy
+- Processing user-generated or untrusted HTML
+- Require full configuration options
+
+### 2. html-to-md - Lightweight JavaScript Engine
+
+**How it works**: Uses JavaScriptCore to run html-to-md directly without WebView overhead.
+
+**Advantages**:
+- ⚡ **Much faster**: ~5-10ms per conversion (10x faster than Turndown)
+- 💾 **Lower memory footprint**: No WebView overhead
+- 🧵 **Background thread capable**: Can run on any thread via serial queue
+- 🔋 **Better for batch processing**: Ideal for converting many documents
+
+**Disadvantages**:
+- 📉 **Less accurate**: String-based parsing may struggle with complex HTML
+- ⚙️ **Limited configuration**: Fewer formatting options available
+- 🚫 **No DOM environment**: Cannot handle JavaScript-rendered content
+- 🐛 **Less mature**: Newer library, may have edge cases
+
+**When to use**:
+- High-performance requirements or batch conversions
+- Simple, well-formed HTML content
+- Memory-constrained environments (watchOS, widgets)
+- Background processing needs
+
+### Usage Example
+
+```swift
+// Using Turndown (default)
+let options = DemarkOptions(
+    engine: .turndown,  // Full-featured, most accurate
+    headingStyle: .atx,
+    bulletListMarker: "-"
+)
+
+// Using html-to-md for performance
+let fastOptions = DemarkOptions(
+    engine: .htmlToMd  // Fast, lightweight
+    // Note: Some options like headingStyle are ignored with html-to-md
+)
+
+let markdown = try await demark.convertToMarkdown(html, options: fastOptions)
+```
+
+### Performance Comparison
+
+| Engine | First Conversion | Subsequent | Memory | Thread Safety |
+|--------|-----------------|------------|---------|---------------|
+| Turndown.js | ~100ms | ~10-50ms | ~20MB | Main thread only |
+| html-to-md | ~5-10ms | ~5-10ms | ~5MB | Any thread |
+
+### Recommendation
+
+- **Start with Turndown.js** (default) for maximum compatibility
+- **Switch to html-to-md** only if you need the performance boost and your HTML is simple
+- **Test both** with your actual content to ensure quality meets your needs
+
 ### 🎯 Try the Example App
 
 Want to see Demark in action? Check out the comprehensive example app:
