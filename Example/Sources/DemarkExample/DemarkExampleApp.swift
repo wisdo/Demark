@@ -6,7 +6,7 @@ struct DemarkExampleApp: App {
         WindowGroup {
             ContentView()
                 #if os(macOS)
-                .frame(minWidth: 900, minHeight: 600, idealWidth: 1200, idealHeight: 800)
+                .frame(minWidth: 900, idealWidth: 1200, minHeight: 600, idealHeight: 800)
                 #endif
         }
         #if os(macOS)
