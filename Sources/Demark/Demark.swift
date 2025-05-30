@@ -280,15 +280,11 @@ final class ConversionRuntime: Sendable {
         }
 
         // Find Turndown library - try different bundle access methods
-        var possibleBundles = [
+        let possibleBundles = [
+            Bundle.module,
             Bundle.main,
             Bundle(for: ConversionRuntime.self),
         ]
-
-        // Also try the module bundle if available
-        #if canImport(Foundation)
-            possibleBundles.append(Bundle.module)
-        #endif
 
         var turndownPath: String?
 

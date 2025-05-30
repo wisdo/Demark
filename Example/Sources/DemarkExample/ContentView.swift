@@ -118,22 +118,26 @@ struct ContentView: View {
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 16) {
                     Text("Heading Style:")
-                        .frame(width: 100, alignment: .leading)
+                        .frame(width: 110, alignment: .trailing)
+                        .foregroundColor(.secondary)
                     
                     Picker("", selection: $options.headingStyle) {
                         Text("ATX (# Heading)").tag(DemarkHeadingStyle.atx)
                         Text("Setext (Underline)").tag(DemarkHeadingStyle.setext)
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 200)
+                    .frame(maxWidth: 300)
+                    
+                    Spacer()
                 }
                 
-                HStack {
+                HStack(spacing: 16) {
                     Text("List Marker:")
-                        .frame(width: 100, alignment: .leading)
+                        .frame(width: 110, alignment: .trailing)
+                        .foregroundColor(.secondary)
                     
                     Picker("", selection: $options.bulletListMarker) {
                         Text("- (Dash)").tag("-")
@@ -141,19 +145,24 @@ struct ContentView: View {
                         Text("+ (Plus)").tag("+")
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 200)
+                    .frame(maxWidth: 300)
+                    
+                    Spacer()
                 }
                 
-                HStack {
+                HStack(spacing: 16) {
                     Text("Code Blocks:")
-                        .frame(width: 100, alignment: .leading)
+                        .frame(width: 110, alignment: .trailing)
+                        .foregroundColor(.secondary)
                     
                     Picker("", selection: $options.codeBlockStyle) {
                         Text("Fenced (```)").tag(DemarkCodeBlockStyle.fenced)
                         Text("Indented").tag(DemarkCodeBlockStyle.indented)
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 200)
+                    .frame(maxWidth: 300)
+                    
+                    Spacer()
                 }
             }
             .font(.caption)

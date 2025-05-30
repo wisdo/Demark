@@ -348,6 +348,24 @@ Contributions are welcome! Please feel free to submit issues, feature requests, 
 swift test
 ```
 
+### Code Quality
+
+This project uses SwiftLint and SwiftFormat to maintain code quality:
+
+```bash
+# Install tools (if not already installed)
+brew install swiftlint swiftformat
+
+# Run linting and formatting checks
+./scripts/lint.sh
+
+# Auto-fix formatting issues
+./scripts/swiftformat.sh
+
+# Auto-fix some lint issues
+./scripts/swiftlint.sh --fix
+```
+
 ## License
 
 Demark is available under the MIT license. See the [LICENSE](LICENSE) file for more info.
