@@ -1,44 +1,100 @@
 # Demark Example App
 
-A comprehensive example application demonstrating the capabilities of the **Demark** HTML-to-Markdown conversion library.
+A demonstration app showcasing the Demark HTML to Markdown converter with support for both iOS and macOS.
 
 ## Features
 
-- 🖥️ **Dual-Pane Interface**: HTML input on the left, Markdown output on the right  
-- 📝 **Source & Rendered Views**: Toggle between raw Markdown and rendered output
-- 🎯 **Sample Documents**: Pre-built HTML examples (Simple, Blog, Documentation, Complex)
-- ⚙️ **Live Configuration**: Real-time conversion options adjustment
-- 🚀 **Swift 6 Ready**: Built with strict concurrency and modern Swift features
+- **Dual Engine Support**: Switch between Turndown.js (full-featured) and html-to-md (fast) engines
+- **Real-time Conversion**: Convert HTML to Markdown instantly
+- **Platform Native**: Optimized UI for both iOS and macOS
+- **Sample Content**: Pre-loaded HTML samples for testing
+- **Markdown Preview**: View both source and rendered Markdown
 
-## Running the Example
+## Running the App
 
-### Quick Start
+### Using Xcode (Recommended)
 
+1. Open the Swift Package in Xcode:
+   ```bash
+   cd Example
+   open Package.swift
+   ```
+
+2. Select the appropriate scheme:
+   - **DemarkExample**: For macOS
+   - **DemarkExample**: For iOS (select an iOS Simulator)
+
+3. Press ⌘+R to build and run
+
+### Using Command Line
+
+For macOS:
 ```bash
-# Use the convenience script from project root
-./run-example.sh
-
-# Or run manually
 cd Example
 swift run DemarkExample
 ```
 
-### Development in Xcode
+Note: iOS apps cannot be run directly from the command line.
 
-```bash
-# Generate and open Xcode project  
-./generate-xcodeproj.sh --open
+## Project Structure
 
-# Or open Package.swift directly
-open Package.swift
 ```
+Example/
+├── Sources/
+│   └── DemarkExample/
+│       ├── DemarkExampleApp.swift    # App entry point
+│       ├── ContentView.swift         # Main view with platform switching
+│       ├── ContentView-iOS.swift     # iOS-specific layout
+│       ├── ContentView-macOS.swift   # macOS-specific layout
+│       ├── MarkdownRenderer.swift    # Markdown preview renderer
+│       └── Assets.xcassets/          # App icons and colors
+├── Package.swift                      # Swift Package definition
+└── README.md                         # This file
+```
+
+## Customization
+
+### Conversion Options
+
+The app demonstrates all available conversion options:
+
+- **Engine**: Turndown.js or html-to-md
+- **Heading Style**: ATX (`#`) or Setext (underline) - Turndown only
+- **List Markers**: `-`, `*`, or `+`
+- **Code Blocks**: Fenced (```) or Indented - Turndown only
+
+### Adding Sample HTML
+
+Edit the `SampleHTML` enum in `ContentView.swift` to add more HTML samples:
+
+```swift
+case myNewSample
+
+var html: String {
+    switch self {
+    case .myNewSample:
+        return """
+        <h1>My Sample</h1>
+        <p>Sample content here</p>
+        """
+    }
+}
+```
+
+## Platform Differences
+
+### iOS
+- Uses `NavigationStack` for navigation
+- Touch-optimized controls
+- Supports both iPhone and iPad
+
+### macOS
+- Uses `HSplitView` for side-by-side layout
+- Native macOS controls and styling
+- Keyboard shortcuts (⌘+Return to convert)
 
 ## Requirements
 
-- **Swift 6.0+**
-- **macOS 14.0+** or **iOS 17.0+**  
-- **Xcode 15.0+** (for development)
-
-## License
-
-This example is part of the Demark package and is available under the MIT license.
+- iOS 17.0+ / macOS 14.0+
+- Xcode 15.0+
+- Swift 5.9+

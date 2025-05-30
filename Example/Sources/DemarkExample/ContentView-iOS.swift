@@ -4,7 +4,7 @@ import Demark
 #if os(iOS)
 extension ContentView {
     var iOSLayout: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     // HTML Input Section
@@ -133,7 +133,6 @@ extension ContentView {
             .navigationTitle("Demark")
             .navigationBarTitleDisplayMode(.large)
         }
-        .navigationViewStyle(.stack)
     }
 }
 #endif

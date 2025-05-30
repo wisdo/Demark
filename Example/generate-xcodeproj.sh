@@ -11,21 +11,36 @@ echo
 # Change to the Example directory
 cd "$(dirname "$0")"
 
-# Create Xcode project by opening Package.swift directly
-echo "📦 Opening Package.swift in Xcode will create the project automatically"
-echo
+# Check if xcodegen is installed
+if ! command -v xcodegen &> /dev/null; then
+    echo "⚠️  XcodeGen not found. Installing..."
+    
+    # Try to install via homebrew
+    if command -v brew &> /dev/null; then
+        echo "Installing XcodeGen via Homebrew..."
+        brew install xcodegen
+    else
+        echo "❌ Homebrew not found. Please install XcodeGen manually:"
+        echo "   brew install xcodegen"
+        echo "   or"
+        echo "   mint install yonaskolb/XcodeGen"
+        exit 1
+    fi
+fi
 
-# Open in Xcode
+# Generate the Xcode project
+echo "📦 Generating Xcode project..."
+xcodegen generate
+
+# Open in Xcode if requested
 if [ "$1" = "--open" ]; then
-    echo "📱 Opening Package.swift in Xcode..."
-    open Package.swift
+    echo "📱 Opening project in Xcode..."
+    open DemarkExample.xcodeproj
 fi
 
 echo
-echo "✅ Ready to work with Demark Example!"
-echo "   Package: $(pwd)/Package.swift"
+echo "✅ Xcode project generated successfully!"
+echo "   Project: $(pwd)/DemarkExample.xcodeproj"
 echo
-echo "To open in Xcode:  open Package.swift"
-echo "To build from CLI: swift build"
-echo "To run from CLI:   swift run DemarkExample"
-echo "To test from CLI:  swift test"
+echo "To open in Xcode:  open DemarkExample.xcodeproj"
+echo "To select scheme:  Use 'DemarkExample-iOS' or 'DemarkExample-macOS'"
