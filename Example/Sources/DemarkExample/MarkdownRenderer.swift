@@ -85,7 +85,9 @@ struct MarkdownRenderer: View {
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+#if os(macOS)
             .background(Color(NSColor.controlBackgroundColor))
+#endif
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)

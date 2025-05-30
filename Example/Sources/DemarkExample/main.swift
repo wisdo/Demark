@@ -7,7 +7,9 @@ struct DemarkExampleApp: App {
             ContentView()
         }
         .windowResizability(.contentSize)
+#if os(macOS)
         .windowStyle(.titleBar)
+#endif
         .commands {
             CommandGroup(replacing: .newItem) {}
         }

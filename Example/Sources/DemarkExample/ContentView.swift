@@ -1,13 +1,19 @@
 import SwiftUI
 import Demark
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 struct ContentView: View {
-    @State private var htmlInput: String = SampleHTML.defaultHTML
-    @State private var markdownOutput: String = ""
-    @State private var isConverting: Bool = false
-    @State private var conversionError: String?
-    @State private var selectedTab: OutputTab = .source
-    @State private var options = DemarkOptions()
+    @State var htmlInput: String = SampleHTML.defaultHTML
+    @State var markdownOutput: String = ""
+    @State var isConverting: Bool = false
+    @State var conversionError: String?
+    @State var selectedTab: OutputTab = .source
+    @State var options = DemarkOptions()
+    @State var selectedEngine: ConversionEngine = .turndown
     
     private let demark = Demark()
     
@@ -24,46 +30,16 @@ struct ContentView: View {
     }
     
     var body: some View {
-        HSplitView {
-            // Left Pane - HTML Input
-            VStack(alignment: .leading, spacing: 0) {
-                inputHeader
-                
-                Divider()
-                
-                inputEditor
-                
-                Divider()
-                    .padding(.top, 8)
-                
-                optionsPanel
-            }
-            .frame(minWidth: 400, idealWidth: 500)
-            
-            // Right Pane - Markdown Output
-            VStack(alignment: .leading, spacing: 0) {
-                outputHeader
-                
-                Divider()
-                
-                outputTabs
-                
-                outputContent
-            }
-            .frame(minWidth: 400, idealWidth: 500)
-        }
-        .frame(minWidth: 900, minHeight: 600)
-        .navigationTitle("Demark Example")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                convertButton
-            }
-        }
+        #if os(macOS)
+        macOSLayout
+        #else
+        iOSLayout
+        #endif
     }
     
     // MARK: - Input Section
     
-    private var inputHeader: some View {
+    var inputHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Label("HTML Input", systemImage: "chevron.left.forwardslash.chevron.right")
@@ -82,14 +58,14 @@ struct ContentView: View {
         .padding()
     }
     
-    private var inputEditor: some View {
+    var inputEditor: some View {
         ScrollView {
             TextEditor(text: $htmlInput)
                 .font(.system(.body, design: .monospaced))
                 .scrollContentBackground(.hidden)
                 .background(Color.clear)
         }
-        .background(Color(NSColor.textBackgroundColor))
+        .background(platformBackgroundColor)
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
@@ -98,7 +74,7 @@ struct ContentView: View {
         .padding(.horizontal)
     }
     
-    private var sampleHTMLMenu: some View {
+    var sampleHTMLMenu: some View {
         Menu("Sample HTML") {
             ForEach(SampleHTML.allCases, id: \.self) { sample in
                 Button(sample.name) {
@@ -112,13 +88,31 @@ struct ContentView: View {
     
     // MARK: - Options Panel
     
-    private var optionsPanel: some View {
+    var optionsPanel: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Conversion Options")
                 .font(.headline)
                 .fontWeight(.semibold)
             
             VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 16) {
+                    Text("Engine:")
+                        .frame(width: 110, alignment: .trailing)
+                        .foregroundColor(.secondary)
+                    
+                    Picker("", selection: $selectedEngine) {
+                        Text("Turndown (Full Featured)").tag(ConversionEngine.turndown)
+                        Text("html-to-md (Fast)").tag(ConversionEngine.htmlToMd)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 300)
+                    .onChange(of: selectedEngine) { _, newValue in
+                        options.engine = newValue
+                    }
+                    
+                    Spacer()
+                }
+                
                 HStack(spacing: 16) {
                     Text("Heading Style:")
                         .frame(width: 110, alignment: .trailing)
@@ -130,6 +124,8 @@ struct ContentView: View {
                     }
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 300)
+                    .disabled(selectedEngine == .htmlToMd)
+                    .opacity(selectedEngine == .htmlToMd ? 0.5 : 1.0)
                     
                     Spacer()
                 }
@@ -161,14 +157,23 @@ struct ContentView: View {
                     }
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 300)
+                    .disabled(selectedEngine == .htmlToMd)
+                    .opacity(selectedEngine == .htmlToMd ? 0.5 : 1.0)
                     
                     Spacer()
                 }
             }
             .font(.caption)
+            
+            if selectedEngine == .htmlToMd {
+                Text("Note: html-to-md only supports ATX headings and fenced code blocks")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .italic()
+            }
         }
         .padding()
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(platformControlBackgroundColor)
         .cornerRadius(8)
         .padding(.horizontal)
         .padding(.bottom)
@@ -176,7 +181,7 @@ struct ContentView: View {
     
     // MARK: - Output Section
     
-    private var outputHeader: some View {
+    var outputHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Label("Markdown Output", systemImage: "doc.text")
@@ -210,7 +215,7 @@ struct ContentView: View {
         .padding()
     }
     
-    private var outputTabs: some View {
+    var outputTabs: some View {
         HStack(spacing: 0) {
             ForEach(OutputTab.allCases, id: \.self) { tab in
                 Button(action: { selectedTab = tab }) {
@@ -233,7 +238,7 @@ struct ContentView: View {
         .padding(.bottom, 8)
     }
     
-    private var outputContent: some View {
+    var outputContent: some View {
         Group {
             switch selectedTab {
             case .source:
@@ -245,7 +250,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    private var markdownSourceView: some View {
+    var markdownSourceView: some View {
         ScrollView {
             VStack(alignment: .leading) {
                 Text(markdownOutput.isEmpty ? "No content yet" : markdownOutput)
@@ -258,7 +263,7 @@ struct ContentView: View {
             }
             .padding()
         }
-        .background(Color(NSColor.textBackgroundColor))
+        .background(platformBackgroundColor)
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
@@ -284,7 +289,7 @@ struct ContentView: View {
             }
             .padding()
         }
-        .background(Color(NSColor.textBackgroundColor))
+        .background(platformBackgroundColor)
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
@@ -296,7 +301,7 @@ struct ContentView: View {
     
     // MARK: - Action Buttons
     
-    private var convertButton: some View {
+    var convertButton: some View {
         Button(action: convertHTML) {
             HStack {
                 Image(systemName: "arrow.right.circle.fill")
@@ -318,7 +323,7 @@ struct ContentView: View {
     // MARK: - Actions
     
     @MainActor
-    private func convertHTML() {
+    func convertHTML() {
         guard !htmlInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         
         isConverting = true
@@ -338,10 +343,32 @@ struct ContentView: View {
         }
     }
     
-    private func copyMarkdown() {
+    func copyMarkdown() {
+        #if os(macOS)
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(markdownOutput, forType: .string)
+        #elseif os(iOS)
+        UIPasteboard.general.string = markdownOutput
+        #endif
+    }
+    
+    // MARK: - Platform Helpers
+    
+    private var platformBackgroundColor: Color {
+        #if os(macOS)
+        return Color(NSColor.textBackgroundColor)
+        #else
+        return Color(.systemBackground)
+        #endif
+    }
+    
+    private var platformControlBackgroundColor: Color {
+        #if os(macOS)
+        return Color(NSColor.controlBackgroundColor)
+        #else
+        return Color(.secondarySystemBackground)
+        #endif
     }
 }
 
