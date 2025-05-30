@@ -37,6 +37,28 @@ final class TurndownRuntime: Sendable {
             logger.error("WKWebView not available")
             throw DemarkError.webViewInitializationFailed
         }
+        
+        // Check if TurndownService is still available (handles process termination)
+        do {
+            let turndownCheck = try await webView.evaluateJavaScript("typeof TurndownService")
+            if let result = turndownCheck as? String, result != "function" {
+                logger.warning("TurndownService not available, reinitializing...")
+                isInitialized = false
+                try await initializeJavaScriptEnvironment()
+                
+                guard isInitialized else {
+                    throw DemarkError.jsEnvironmentInitializationFailed
+                }
+            }
+        } catch {
+            logger.warning("Failed to check TurndownService availability, reinitializing...")
+            isInitialized = false
+            try await initializeJavaScriptEnvironment()
+            
+            guard isInitialized else {
+                throw DemarkError.jsEnvironmentInitializationFailed
+            }
+        }
 
         // Build Turndown options
         let optionsDict: [String: Any] = [
