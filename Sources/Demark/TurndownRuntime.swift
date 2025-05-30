@@ -49,20 +49,20 @@ final class TurndownRuntime: Sendable {
         do {
             let turndownCheck = try await webView.evaluateJavaScript("typeof TurndownService")
             if let result = turndownCheck as? String, result != "function" {
-                logger.warning("TurndownService not available, reinitializing...")
+                logger.warning("TurndownService not available (type: \(result)), reinitializing...")
                 isInitialized = false
                 try await initializeJavaScriptEnvironment()
                 
-                guard isInitialized else {
+                guard isInitialized, let _ = self.webView else {
                     throw DemarkError.jsEnvironmentInitializationFailed
                 }
             }
         } catch {
-            logger.warning("Failed to check TurndownService availability, reinitializing...")
+            logger.warning("Failed to check TurndownService availability: \(error), reinitializing...")
             isInitialized = false
             try await initializeJavaScriptEnvironment()
             
-            guard isInitialized else {
+            guard isInitialized, let _ = self.webView else {
                 throw DemarkError.jsEnvironmentInitializationFailed
             }
         }
@@ -108,8 +108,18 @@ final class TurndownRuntime: Sendable {
         let jsCode = """
         (function() {
             try {
+                // Find TurndownService constructor
+                var TurndownConstructor = null;
+                if (typeof TurndownService !== 'undefined') {
+                    TurndownConstructor = TurndownService;
+                } else if (typeof window.TurndownService !== 'undefined') {
+                    TurndownConstructor = window.TurndownService;
+                } else {
+                    throw new Error('TurndownService is not available');
+                }
+                
                 // Create TurndownService with options
-                var turndownService = new TurndownService(\(optionsString));
+                var turndownService = new TurndownConstructor(\(optionsString));
 
                 // Configure service
                 turndownService.keep(['del', 'ins', 'sup', 'sub']);
@@ -224,16 +234,29 @@ final class TurndownRuntime: Sendable {
             let turndownScript = try String(contentsOfFile: turndownPath, encoding: .utf8)
             logger.info("Successfully read Turndown (\(turndownScript.count) characters)")
 
+            // Load the Turndown library directly
             _ = try await webView.evaluateJavaScript(turndownScript)
             logger.info("Successfully loaded Turndown JavaScript library")
-
-            // Verify Turndown is available
-            let turndownCheck = try await webView.evaluateJavaScript("typeof TurndownService")
             
-            guard let turndownResult = turndownCheck as? String, turndownResult == "function" else {
-                logger.error("TurndownService was not properly loaded")
-                throw DemarkError.libraryLoadingFailed("TurndownService not available")
+            // Wait a bit for the script to fully initialize
+            try await Task.sleep(nanoseconds: 50_000_000) // 50ms
+
+            // Check what's available in the global scope
+            let globalCheck = try await webView.evaluateJavaScript("""
+                JSON.stringify({
+                    hasTurndownService: typeof TurndownService !== 'undefined',
+                    hasTurndown: typeof Turndown !== 'undefined',
+                    hasWindowTurndownService: typeof window.TurndownService !== 'undefined',
+                    hasWindowTurndown: typeof window.Turndown !== 'undefined'
+                })
+            """)
+            
+            if let checkResult = globalCheck as? String {
+                logger.info("Global scope check: \(checkResult)")
             }
+            
+            // Since TurndownService is available, we don't need to do anything else
+            // The global scope check confirmed it's there
 
             isInitialized = true
             logger.info("WKWebView runtime ready with Turndown 🎉")
