@@ -26,7 +26,7 @@ let package = Package(
             name: "Demark",
             dependencies: [],
             resources: [
-                .copy("Resources")
+                .process("Resources")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")

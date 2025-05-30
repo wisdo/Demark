@@ -44,3 +44,6 @@ echo "   Project: $(pwd)/DemarkExample.xcodeproj"
 echo
 echo "To open in Xcode:  open DemarkExample.xcodeproj"
 echo "To select scheme:  Use 'DemarkExample-iOS' or 'DemarkExample-macOS'"
+echo
+echo "💡 Note: If you see Xcode build warnings about recommended settings,"
+echo "   just run this script again to regenerate with updated settings."

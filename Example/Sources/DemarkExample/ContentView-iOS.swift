@@ -37,6 +37,20 @@ extension ContentView {
                         
                         VStack(spacing: 16) {
                             VStack(alignment: .leading, spacing: 8) {
+                                Text("Engine")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Picker("Engine", selection: $selectedEngine) {
+                                    Text("Turndown").tag(ConversionEngine.turndown)
+                                    Text("html-to-md").tag(ConversionEngine.htmlToMd)
+                                }
+                                .pickerStyle(.segmented)
+                                .onChange(of: selectedEngine) { _, newValue in
+                                    options.engine = newValue
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text("Heading Style")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -45,6 +59,8 @@ extension ContentView {
                                     Text("Setext").tag(DemarkHeadingStyle.setext)
                                 }
                                 .pickerStyle(.segmented)
+                                .disabled(selectedEngine == .htmlToMd)
+                                .opacity(selectedEngine == .htmlToMd ? 0.5 : 1.0)
                             }
                             
                             VStack(alignment: .leading, spacing: 8) {
@@ -68,7 +84,16 @@ extension ContentView {
                                     Text("Indented").tag(DemarkCodeBlockStyle.indented)
                                 }
                                 .pickerStyle(.segmented)
+                                .disabled(selectedEngine == .htmlToMd)
+                                .opacity(selectedEngine == .htmlToMd ? 0.5 : 1.0)
                             }
+                        }
+                        
+                        if selectedEngine == .htmlToMd {
+                            Text("Note: html-to-md only supports ATX headings and fenced code blocks")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .italic()
                         }
                     }
                     .padding()

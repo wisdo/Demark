@@ -1,5 +1,22 @@
 import SwiftUI
 
+// MARK: - Cross-platform Color Extension
+#if os(iOS)
+import UIKit
+extension Color {
+    static var textBackgroundColor: Color {
+        Color(UIColor.secondarySystemBackground)
+    }
+}
+#else
+import AppKit
+extension Color {
+    static var textBackgroundColor: Color {
+        Color(NSColor.textBackgroundColor)
+    }
+}
+#endif
+
 struct MarkdownRenderer: View {
     let markdown: String
     
@@ -122,44 +139,12 @@ struct MarkdownRenderer: View {
                 VStack(spacing: 0) {
                     // Header
                     if !table.headers.isEmpty {
-                        HStack(spacing: 0) {
-                            ForEach(Array(table.headers.enumerated()), id: \.offset) { _, header in
-                                Text(parseInlineMarkdown(header))
-                                    .font(.headline)
-                                    .padding(8)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color.secondary.opacity(0.1))
-                                
-                                if header != table.headers.last {
-                                    Divider()
-                                }
-                            }
-                        }
-                        .overlay(
-                            Rectangle()
-                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                        )
+                        renderTableHeader(table.headers)
                     }
                     
                     // Rows
-                    ForEach(Array(table.rows.enumerated()), id: \.offset) { _, row in
-                        HStack(spacing: 0) {
-                            ForEach(Array(row.enumerated()), id: \.offset) { _, cell in
-                                Text(parseInlineMarkdown(cell))
-                                    .font(.body)
-                                    .padding(8)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                if cell != row.last {
-                                    Divider()
-                                }
-                            }
-                        }
-                        .background(Color(NSColor.textBackgroundColor))
-                        .overlay(
-                            Rectangle()
-                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                        )
+                    ForEach(Array(table.rows.enumerated()), id: \.offset) { index, row in
+                        renderTableRow(row)
                     }
                 }
                 .cornerRadius(8)
@@ -168,6 +153,48 @@ struct MarkdownRenderer: View {
                     .foregroundColor(.secondary)
             }
         }
+    }
+    
+    @ViewBuilder
+    private func renderTableHeader(_ headers: [String]) -> some View {
+        HStack(spacing: 0) {
+            ForEach(Array(headers.enumerated()), id: \.offset) { index, header in
+                Text(parseInlineMarkdown(header))
+                    .font(.headline)
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.secondary.opacity(0.1))
+                
+                if index < headers.count - 1 {
+                    Divider()
+                }
+            }
+        }
+        .overlay(
+            Rectangle()
+                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+        )
+    }
+    
+    @ViewBuilder
+    private func renderTableRow(_ row: [String]) -> some View {
+        HStack(spacing: 0) {
+            ForEach(Array(row.enumerated()), id: \.offset) { index, cell in
+                Text(parseInlineMarkdown(cell))
+                    .font(.body)
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                if index < row.count - 1 {
+                    Divider()
+                }
+            }
+        }
+        .background(Color.textBackgroundColor)
+        .overlay(
+            Rectangle()
+                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+        )
     }
     
     // MARK: - Inline Markdown Parsing (Simplified)

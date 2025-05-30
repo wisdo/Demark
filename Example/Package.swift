@@ -24,9 +24,6 @@ let package = Package(
             dependencies: [
                 .product(name: "Demark", package: "Demark")
             ],
-            resources: [
-                .process("Assets.xcassets")
-            ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),
                 .unsafeFlags(["-parse-as-library"])
