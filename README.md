@@ -1,8 +1,8 @@
-# Demark
+# Demark: Mark My Words, HTML to Markdown!
 
 ![DEMARK - HTML in → Markdown out ⚡](assets/banner.png)
 
-**A modern Swift package for converting HTML to Markdown using Turndown.js in a WKWebView environment.**
+**The Swift package that turns down HTML and turns up Markdown – it's a markup markdown!**
 
 [![Swift 6](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
 [![Platforms](https://img.shields.io/badge/Platforms-iOS%20|%20macOS%20|%20watchOS%20|%20tvOS%20|%20visionOS-lightgrey.svg)](https://developer.apple.com/swift/)
