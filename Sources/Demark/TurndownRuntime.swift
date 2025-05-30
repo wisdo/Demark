@@ -16,7 +16,14 @@ final class TurndownRuntime: Sendable {
     
     private let logger = Logger(subsystem: "com.demark", category: "turndown")
     private var isInitialized = false
+    // Strong reference to prevent garbage collection
     private var webView: WKWebView?
+    
+    // MARK: - Lifecycle
+    
+    deinit {
+        logger.info("TurndownRuntime being deallocated")
+    }
     
     // MARK: - Public Methods
     
@@ -194,38 +201,16 @@ final class TurndownRuntime: Sendable {
             throw DemarkError.webViewInitializationFailed
         }
 
-        // Find JavaScript libraries - try different bundle access methods
-        let possibleBundles = [
-            Bundle.module,
-            Bundle.main,
-            Bundle(for: TurndownRuntime.self),
-        ]
-
-        var turndownPath: String?
-
-        for bundle in possibleBundles {
-            if turndownPath == nil {
-                turndownPath = bundle.path(forResource: "turndown.min", ofType: "js")
-                if turndownPath != nil {
-                    logger.info("Found turndown.min.js in bundle: \(bundle.bundleIdentifier ?? "unknown")")
-                } else {
-                    // Try in Resources subdirectory
-                    if let resourcesPath = bundle.path(forResource: "Resources/turndown.min", ofType: "js") {
-                        turndownPath = resourcesPath
-                        logger.info("Found turndown.min.js in Resources subdirectory")
-                    }
-                }
-            }
-            
-            if turndownPath != nil {
-                break
-            }
-        }
-
-        guard let turndownPath else {
+        // Find JavaScript library using helper
+        guard let turndownPath = BundleResourceHelper.findJavaScriptResource(
+            named: "turndown.min",
+            classForBundle: TurndownRuntime.self
+        ) else {
             logger.error("turndown.min.js not found in any bundle")
             throw DemarkError.libraryNotFound("turndown.min.js")
         }
+        
+        logger.info("Found turndown.min.js at: \(turndownPath)")
         
         do {
             // Load a blank page first

@@ -127,23 +127,11 @@ final class HTMLToMdRuntime: @unchecked Sendable {
                         }
                     }
                     
-                    // Load html-to-md library
-                    let bundles = [
-                        Bundle.module,
-                        Bundle.main,
-                        Bundle(for: HTMLToMdRuntime.self)
-                    ]
-                    
-                    var htmlToMdPath: String?
-                    for bundle in bundles {
-                        htmlToMdPath = bundle.path(forResource: "html-to-md.min", ofType: "js")
-                        if htmlToMdPath == nil {
-                            htmlToMdPath = bundle.path(forResource: "Resources/html-to-md.min", ofType: "js")
-                        }
-                        if htmlToMdPath != nil { break }
-                    }
-                    
-                    guard let path = htmlToMdPath else {
+                    // Load html-to-md library using helper
+                    guard let path = BundleResourceHelper.findJavaScriptResource(
+                        named: "html-to-md.min",
+                        classForBundle: HTMLToMdRuntime.self
+                    ) else {
                         throw DemarkError.libraryNotFound("html-to-md.min.js")
                     }
                     
